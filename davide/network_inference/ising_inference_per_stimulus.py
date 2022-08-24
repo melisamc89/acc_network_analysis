@@ -2,14 +2,16 @@ import coniii
 import numpy as np
 from pathlib import Path
 import pickle
-from tqdm import tqdm
 import random
 from multiprocessing import Pool
+import time
+
+starting_time = time.time()
 
 # PARAMETERS
 n_boots = 10
 sample_size = 0.5
-n_cpus = 10
+n_cpus = 8
 stimulus_duration = 60  # in indexes
 stimuli = [1, 2, 3, 4, 5, 6]
 
@@ -29,7 +31,6 @@ def main():
 
     # clean X
     X = X[:, (np.sum(X == 1, axis=0)/X.shape[0]) > 0.01]
-    X = X[:, :5]
     print(f"# of neurons: {X.shape[1]}")
 
     # import behaviour data
@@ -49,7 +50,7 @@ def main():
                                                   n_boots=n_boots,
                                                   sample_size=sample_size,
                                                   n_cpus=n_cpus)
-    print('Done, saving inferred parameters.')
+    print('Saving inferred parameters.')
     out_file_name = 'ising_parameters_stim_0.pickle'
     with open(output_path+'/'+out_file_name, 'wb') as handle:
         pickle.dump(inferred_params_dict, handle)
@@ -71,7 +72,7 @@ def main():
                                                       n_cpus=n_cpus)
 
         # save network params
-        print('Done, saving inferred parameters.')
+        print('Saving inferred parameters.')
         out_file_name = f'ising_parameters_stim_{s}.pickle'
         with open(output_path+'/'+out_file_name, 'wb') as handle:
             pickle.dump(inferred_params_dict, handle)
@@ -96,6 +97,12 @@ def spinize(traces):
 
 
 def bootstrap_solve_PSEUDO(X, n_boots=10, sample_size=0.5, n_cpus=4):
+    print('Computing pseudolikelihood solution with:')
+    print(f'Data size: {X.shape}')
+    print(f'n_boots: {n_boots}')
+    print(f'number of workers: {n_cpus}')
+    starting_time = time.time()
+
     p = Pool(n_cpus)
     X_samples = []
     for _ in range(n_boots):
@@ -109,6 +116,9 @@ def bootstrap_solve_PSEUDO(X, n_boots=10, sample_size=0.5, n_cpus=4):
     # reshape for saving as dict
     inferred_params_dict = {'h': np.asarray([l[0] for l in inferred_params]),
                             'J': np.asarray([l[1] for l in inferred_params])}
+
+    ending_time = time.time()
+    print(f'Done in {(ending_time-starting_time):.2f} seconds')
 
     return inferred_params_dict
 
