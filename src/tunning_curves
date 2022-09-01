@@ -1,0 +1,27 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import src.plotting_function as plotting
+from sklearn.decomposition import PCA
+import pickle
+
+input_directory = '/home/melisamc/Documentos/acc_network_analysis/data/traces/'
+output_directory = '/home/melisamc/Documentos/acc_network_analysis/data/binary/'
+figure_directory = '/home/melisamc/Documentos/acc_network_analysis/figures/'
+
+colors_list = ['b','r','g','orange','magenta','cyan']
+
+file_name = 'nike_calcium_trace.npy'
+#file_name = 'havaianna_SE_gSig_4_mincorr_0.312_minpnr_2.3_traces_CE_snr_4_pcc_0.5_traces_accepted.npy'
+srate = 30
+calcium_trace = np.load(input_directory + file_name)
+calcium_mean = np.mean(calcium_trace, axis=1)
+selected_order = np.argsort(calcium_mean)
+calcium_trace = calcium_trace[selected_order[:50],:]
+calcium_mean = np.mean(calcium_trace, axis=1)
+calcium_std = np.std(calcium_trace, axis=1)
+n_std = 1
+spikes_threshold = calcium_mean + n_std * calcium_std
+
+binary_signal = np.zeros_like(calcium_trace)
+for neuron in range(calcium_trace.shape[0]):
+    binary_signal[neuron, np.where(calcium_trace[neuron,:] > spikes_threshold[neuron])[0]] = 1
