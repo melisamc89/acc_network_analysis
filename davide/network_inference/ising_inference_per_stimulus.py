@@ -9,9 +9,9 @@ import time
 starting_time = time.time()
 
 # PARAMETERS
-n_boots = 10
+n_boots = 20
 sample_size = 0.5
-n_cpus = 8
+n_cpus = 10
 stimulus_duration = 60  # in indexes
 stimuli = [1, 2, 3, 4, 5, 6]
 
